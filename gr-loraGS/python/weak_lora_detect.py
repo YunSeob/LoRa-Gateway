@@ -62,6 +62,7 @@ class weak_lora_detect(gr.sync_block):
 
         # for drawing
         self.image_count = 0
+        self.image_path = '/home/yun/Desktop/GNU_lora/LoRa-Gateway/gr-loraGS/image/'
 
         # ------------------------ for checking ----------------------------------
         self.demod = css_demod_algo(self.M)
@@ -118,13 +119,13 @@ class weak_lora_detect(gr.sync_block):
         dechirped_adjusted_signal = self.adjusted_signal * self.dechirp_8
         # ----------------- drawing ------------------
         offset_ffted = numpy.fft.fft(offset_signal)
-        self.draw_graph(offset_ffted, '%d_1_offset_ffted' %(-frequencyOffset_bin)) 
+        # self.draw_graph(offset_ffted, '%d_1_offset_ffted' %(-frequencyOffset_bin)) 
 
         dechirped_origin_ffted = numpy.fft.fft(self.signal_buffer[signal_index:signal_index + self.M * 8]*self.dechirp_8)
-        self.draw_graph(abs(dechirped_origin_ffted), '%d_2_dechirped_origin_ffted' %(-frequencyOffset_bin))
+        # self.draw_graph(abs(dechirped_origin_ffted), '%d_2_dechirped_origin_ffted' %(-frequencyOffset_bin))
 
         dechirped_adjusted_ffted = numpy.fft.fft(dechirped_adjusted_signal)
-        self.draw_graph(abs(dechirped_adjusted_ffted), '%d_3_dechirped_adjusted_ffted' %(-frequencyOffset_bin))
+        # self.draw_graph(abs(dechirped_adjusted_ffted), '%d_3_dechirped_adjusted_ffted' %(-frequencyOffset_bin))
         # ----------------- !drawing ----------------- 
         adjusted_bin = numpy.argmax(numpy.abs(dechirped_adjusted_ffted))
         print("adjusted:", adjusted_bin)
@@ -138,10 +139,10 @@ class weak_lora_detect(gr.sync_block):
 
         channel_est = self.adjusted_signal / self.upchirp_8
 
-        for i in range(8):
-            plt.plot(channel_est[i*self.M : (i+1)*self.M])
-            plt.savefig("estimation/est-%d-%d.png" %(self.image_count, i))
-            plt.clf()
+        # for i in range(8):
+        #     plt.plot(channel_est[i*self.M : (i+1)*self.M])
+        #     plt.savefig("estimation/est-%d-%d.png" %(self.image_count, i))
+        #     plt.clf()
 
     def detect_preamble(self):
         if self.buffer[0] == -1:
@@ -159,7 +160,8 @@ class weak_lora_detect(gr.sync_block):
 
     def draw_graph(self, graph, description):
         plt.plot(graph)
-        plt.savefig(description)
+        plt.savefig(self.image_path + description)
+        # plt.savefig(description)
         plt.clf()
 
     def work(self, input_items, output_items):
@@ -201,7 +203,7 @@ class weak_lora_detect(gr.sync_block):
                         self.enough_increase = False
                         if(self.max_mag > self.energe_buffer[0] * 5):
                             self.image_count += 1
-                            # self.draw_graph(self.energe_buffer, "%d-broad" %(self.image_count))
+                            self.draw_graph(self.energe_buffer, "%d-broad" %(self.image_count))
                             print("detect lora preamble (with charm)")
                             max_index, energe = self.find_maximum()
                             max_index_detail, max_bin_detail = self.find_maximum_detail(max_index - (n_syms - i - 1))
